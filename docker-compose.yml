@@ -1,10 +1,39 @@
 include:
-  - ./docker-compose.authentik.yml
-
+  - path:
+      - docker-compose.authentik.yml
+      - ./authentik-overrides.yml
 
 services:
   web:
     build:
       context: ./web
+
+  traefik:
+    image: traefik
+    restart: always
+    command:
+      # enable logs on every request
+      - --accesslog=true
+      # enable the traefik dashboard service
+      - --api.dashboard=true
+      # expose ports
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # redirect http -> https
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      # read docker labels for host configurations
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+    labels:
+      traefik.http.middlewares.csp-header.headers.customresponseheaders.content-security-policy: "frame-ancestors *;"
     ports:
-      - 5173:5173
+      - target: 80
+        published: 80
+        protocol: tcp
+        mode: host
+      - target: 443
+        published: 443
+        protocol: tcp
+        mode: host
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"

@@ -1,0 +1,10 @@
+services:
+  server:
+    expose:
+      - 9443
+    labels:
+      traefik.enable: true
+      traefik.http.routers.authentik.rule: Host(`auth.${BASE_DOMAIN}`)
+      traefik.http.routers.authentik.middlewares: csp-header
+      traefik.http.routers.authentik.entrypoints: websecure
+      traefik.http.routers.authentik.tls: true
