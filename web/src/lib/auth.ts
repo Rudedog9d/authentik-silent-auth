@@ -10,6 +10,7 @@ import type {Writable} from "svelte/store";
 import {get, writable} from "svelte/store";
 
 export const clientStore: Writable<UserManager> = writable();
+export const userStore: Writable<User | void | null> = writable();
 
 export async function createClient(){
     if (get(clientStore)) {
@@ -28,9 +29,11 @@ export async function createClient(){
         response_mode: 'query',
         filterProtocolClaims: true,
     });
+
     try {
         if (window.location.search.includes('state=')) {
-            const user = (await this.signinCallback(window.location.search)) || null;
+            const user = (await client.signinCallback(window.location.search)) || null;
+            userStore.set(user);
             console.log('user logged in', user) // this is the success state
             // clear search from URL - we intentionally call this after signinCallback
             // so we have the original url in the browser if signinCallback throws an error
@@ -53,7 +56,7 @@ export async function createClient(){
         console.log('[createClient] try silent auth');
         await client.signinSilent();
     } catch (err) {
-        console.error(err);
+        console.error('signinSilent failed', err);
     }
 
     return client;
