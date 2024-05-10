@@ -1,0 +1,5 @@
+.env
+.idea
+docker-compose.authentik.yml
+.terraform*
+terraform.tfstate*
