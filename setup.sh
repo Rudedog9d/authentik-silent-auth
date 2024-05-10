@@ -18,16 +18,18 @@ env["BASE_DOMAIN"]="local.malteksolutions.com"
 for K in ${!env[@]}
 do
     if [[ ! `grep $K .env 2> /dev/null` ]]; then
-        echo "export $K=${env[$K]}" >> .env
+        echo "$K=${env[$K]}" >> .env
     fi
 done
 
 docker compose up -d --build
 terraform init
+set -a
 source .env
+set +a
 
 echo "Waiting for boot"
-while [[ `curl -skL "https://127.0.0.1/api/v3/admin/version/" -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $AUTHENTIK_BOOTSTRAP_TOKEN"` -ne 200 ]];
+while [[ `curl -skL "$AUTHENTIK_URL/api/v3/admin/version/" -w "%{http_code}" -o /dev/null -H "Authorization: Bearer $AUTHENTIK_BOOTSTRAP_TOKEN"` -ne 200 ]];
 do
     sleep 1
 done
